@@ -159,3 +159,107 @@ void ArbolReal::obtenerLineaSuccesionRecursiva(Nodo* nodo, vector<Nodo*>& linea,
     obtenerLineaSuccesionRecursiva(nodo->segundo, linea, false);
 }
 
+void ArbolReal::mostrarLineaSuccesion() {
+    cout << "\n== LINEA DE SUCESION ACTUAL ==" << endl;
+    
+    Nodo* reyActual = buscarReyActual();
+    if (reyActual != NULL) {
+        cout << "Rey actual: " << reyActual->name << " " << reyActual->last_name << endl;
+        cout << "\nSucesores en orden:" << endl;
+    }
+    
+    vector<Nodo*> linea;
+    
+    if (reyActual != NULL) {
+        obtenerLineaSuccesionRecursiva(reyActual, linea, true);
+        
+        // Si no hay sucesores en la rama del rey, se busca en otras ramas
+        if (linea.empty() && raiz != NULL) {
+            obtenerLineaSuccesionRecursiva(raiz, linea, true);
+        }
+    } else {
+        obtenerLineaSuccesionRecursiva(raiz, linea, true);
+    }
+    
+    int posicion = 1;
+    for (size_t i = 0; i < linea.size(); i++) {
+        cout << posicion++ << ". " << linea[i]->name << " " << linea[i]->last_name 
+             << " (" << linea[i]->gender << ", " << linea[i]->age << " anios)" << endl;
+    }
+    
+    if (linea.empty()) {
+        cout << "No hay sucesores validos." << endl;
+    }
+    
+    cout << "===========================================\n" << endl;
+}
+
+Nodo* ArbolReal::buscarPrimerVaronVivo(Nodo* nodo) {
+    if (nodo == NULL) return NULL;
+    
+    // Si este nodo puede ser rey, retornarlo
+    if (nodo->puedeSerRey()) {
+        return nodo;
+    }
+    
+    Nodo* encontrado = buscarPrimerVaronVivo(nodo->primogenito);
+    if (encontrado != NULL) return encontrado;
+    
+    // Buscamos en segundo hijo si el primogenito no dio resultado
+    return buscarPrimerVaronVivo(nodo->segundo);
+}
+Nodo* ArbolReal::buscarAncestroConDosHijos(Nodo* nodo) {
+    if (nodo == NULL) return NULL;
+    
+    Nodo* actual = nodo->padre;
+    while (actual != NULL) {
+
+if (actual->primogenito != NULL && actual->segundo != NULL) {
+            return actual;
+        }
+        actual = actual->padre;
+    }
+    
+    return NULL;
+}
+
+int ArbolReal::calcularDistanciaAPrimogenitos(Nodo* nodo) {
+    int distancia = 0;
+    Nodo* actual = nodo;
+    
+    while (actual != NULL && actual->padre != NULL) {
+        if (actual->padre->segundo == actual) {
+            distancia++;
+        }
+        actual = actual->padre;
+    }
+    
+    return distancia;
+}
+
+Nodo* ArbolReal::buscarMejorCandidatoMujer() {
+    Nodo* mejorCandidato = NULL;
+    int menorDistancia = 1000;
+    int menorEdad = 100;
+    
+    for (size_t i = 0; i < todosLosNodos.size(); i++) {
+        Nodo* nodo = todosLosNodos[i];
+        if (nodo->puedeSerReina()) {
+            int distancia = calcularDistanciaAPrimogenitos(nodo);
+            
+            // Prioridad: 1) Menor distancia, 2) Menor edad
+            if (distancia < menorDistancia  
+                (distancia == menorDistancia && nodo->age < menorEdad)) {
+                mejorCandidato = nodo;
+                menorDistancia = distancia;
+                menorEdad = nodo->age;
+            }
+        }
+    }
+    
+    return mejorCandidato;
+}
+
+
+
+
