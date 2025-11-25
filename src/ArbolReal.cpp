@@ -135,3 +135,27 @@ void ArbolReal::mostrarNodo(Nodo* nodo, int nivel, bool esPrimogenito) {
     mostrarNodo(nodo->primogenito, nivel + 1, true);
     mostrarNodo(nodo->segundo, nivel + 1, false);
 }
+
+void ArbolReal::mostrarArbol() {
+    cout << "\n========== ARBOL GENEALOGICO REAL ==========" << endl;
+    mostrarNodo(raiz, 0, true);
+    cout << "============================================\n" << endl;
+}
+
+void ArbolReal::obtenerLineaSuccesionRecursiva(Nodo* nodo, vector<Nodo*>& linea, bool esPrimogenito) {
+    if (nodo == NULL) return;
+    
+    // Agregar nodo actual si es candidato valido
+    if (!nodo->is_dead && !nodo->is_king) {
+        if (nodo->gender == 'H' && nodo->age < 70) {
+            linea.push_back(nodo);
+        } else if (nodo->gender == 'M' && nodo->age >= 15 && nodo->age < 70) {
+            linea.push_back(nodo);
+        }
+    }
+    
+    //Primero primogenito, luego segundo
+    obtenerLineaSuccesionRecursiva(nodo->primogenito, linea, true);
+    obtenerLineaSuccesionRecursiva(nodo->segundo, linea, false);
+}
+
