@@ -115,3 +115,23 @@ void ArbolReal::construirRelacionesPadreFijo() {
         }
     }
 }
+
+void ArbolReal::mostrarNodo(Nodo* nodo, int nivel, bool esPrimogenito) {
+    if (nodo == NULL) return;
+    
+    for (int i = 0; i < nivel; i++) cout << "  ";
+    
+    cout << "|- ";
+    if (nodo->is_king) cout << "[REY] ";
+    if (nodo->is_dead) cout << "[MUERTO] ";
+    
+    cout << nodo->name << " " << nodo->last_name 
+         << " (" << nodo->gender << ", " << nodo->age << " anios, ID:" << nodo->id << ")";
+    
+    if (esPrimogenito) cout << " [PRIMOGENITO]";
+    
+    cout << endl;
+    
+    mostrarNodo(nodo->primogenito, nivel + 1, true);
+    mostrarNodo(nodo->segundo, nivel + 1, false);
+}
