@@ -1,0 +1,28 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Compilar proyecto-sucesion-real",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "-g",
+                "${workspaceFolder}/src/main.cpp",
+                "${workspaceFolder}/src/ArbolReal.cpp",
+                "-o",
+                "${workspaceFolder}/bin/royal_family",
+                "-std=c++11"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "echo": true
+            },
+            "problemMatcher": ["$gcc"]
+        }
+    ]
+}
