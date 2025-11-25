@@ -137,9 +137,8 @@ void ArbolReal::mostrarNodo(Nodo* nodo, int nivel, bool esPrimogenito) {
 }
 
 void ArbolReal::mostrarArbol() {
-    cout << "\n========== ARBOL GENEALOGICO REAL ==========" << endl;
+    cout << "\n==ARBOL GENEALOGICO REAL==" << endl;
     mostrarNodo(raiz, 0, true);
-    cout << "============================================\n" << endl;
 }
 
 void ArbolReal::obtenerLineaSuccesionRecursiva(Nodo* nodo, vector<Nodo*>& linea, bool esPrimogenito) {
@@ -208,13 +207,13 @@ Nodo* ArbolReal::buscarPrimerVaronVivo(Nodo* nodo) {
     // Buscamos en segundo hijo si el primogenito no dio resultado
     return buscarPrimerVaronVivo(nodo->segundo);
 }
+
 Nodo* ArbolReal::buscarAncestroConDosHijos(Nodo* nodo) {
     if (nodo == NULL) return NULL;
     
     Nodo* actual = nodo->padre;
     while (actual != NULL) {
-
-if (actual->primogenito != NULL && actual->segundo != NULL) {
+        if (actual->primogenito != NULL && actual->segundo != NULL) {
             return actual;
         }
         actual = actual->padre;
@@ -248,7 +247,7 @@ Nodo* ArbolReal::buscarMejorCandidatoMujer() {
             int distancia = calcularDistanciaAPrimogenitos(nodo);
             
             // Prioridad: 1) Menor distancia, 2) Menor edad
-            if (distancia < menorDistancia  
+            if (distancia < menorDistancia || 
                 (distancia == menorDistancia && nodo->age < menorEdad)) {
                 mejorCandidato = nodo;
                 menorDistancia = distancia;
@@ -260,6 +259,282 @@ Nodo* ArbolReal::buscarMejorCandidatoMujer() {
     return mejorCandidato;
 }
 
+Nodo* ArbolReal::buscarMejorCandidatoVaron(Nodo* inicioNodo) {
+    Nodo* candidato = NULL;
+    
+    //Buscamos en hijos del rey actual (primogenito prioritario)
+    candidato = buscarPrimerVaronVivo(inicioNodo->primogenito);
+    if (candidato != NULL) {
+        cout << "  -> Sucesor encontrado, primogenito del rey" << endl;
+        return candidato;
+    }
+    
+    candidato = buscarPrimerVaronVivo(inicioNodo->segundo);
+    if (candidato != NULL) {
+        cout << "  -> Sucesor encontrado, segundo hijo del rey" << endl;
+        return candidato;
+    }
+    
+    //Buscar hermano del rey
+    if (inicioNodo->padre != NULL) {
+        Nodo* hermano = NULL;
+        if (inicioNodo->padre->primogenito == inicioNodo) {
+            hermano = inicioNodo->padre->segundo;
+        } else {
+            hermano = inicioNodo->padre->primogenito;
+        }
+        
+        if (hermano != NULL) {
+            //Buscar en hijos del hermano primero
+            candidato = buscarPrimerVaronVivo(hermano->primogenito);
+            if (candidato != NULL) {
+                cout << "  -> Sucesor encontrado en rama del hermano(primogenito)" << endl;
+                return candidato;
+            }
+            
+            candidato = buscarPrimerVaronVivo(hermano->segundo);
+            if (candidato != NULL) {
+                cout << "  -> Sucesor encontrado en rama del hermano (segundo)" << endl;
+                return candidato;
+            }
+            
+            if (hermano->puedeSerRey()) {
+                cout << "  -> El hermano del rey es el sucesor" << endl;
+                return hermano;
+            }
+        }
+        
+        //Buscamos tio del rey
+        if (inicioNodo->padre->padre != NULL) {
+            Nodo* abuelo = inicioNodo->padre->padre;
+            Nodo* tio = NULL;
+            
+            if (abuelo->primogenito == inicioNodo->padre) {
+                tio = abuelo->segundo;
+            } else {
+                tio = abuelo->primogenito;
+            }
+            
+            if (tio != NULL) {
+                candidato = buscarPrimerVaronVivo(tio->primogenito);
+                if (candidato != NULL) {
+                    cout << "  -> Sucesor encontrado en rama del tio (primogenito)" << endl;
+                    return candidato;
+                }
+                
+                candidato = buscarPrimerVaronVivo(tio->segundo);
+                if (candidato != NULL) {
+                    cout << "  -> Sucesor encontrado en rama del tio (segundo)" << endl;
+                    return candidato;
+                }
+                
+                if (tio->puedeSerRey()) {
+                    cout << "  -> El tio del rey es el sucesor" << endl;
+                    return tio;
+                }
+            }
+        }
+    }
+    
+    //Buscamos ancestro con dos hijos y exploramos rama del segundo
+    Nodo* ancestro = buscarAncestroConDosHijos(inicioNodo);
+    if (ancestro != NULL) {
+        cout << "  -> Buscando en rama del segundo hijo del ancestro" << endl;
+        candidato = buscarPrimerVaronVivo(ancestro->segundo);
+        if (candidato != NULL) {
+            return candidato;
+        }
+    }
+    
+    //si no hay varones, buscar la mejor mujer candidata
+    cout << "  -> No hay varones disponibles, buscando mujeres" << endl;
+    return buscarMejorCandidatoMujer();
+}
 
+void ArbolReal::asignarReyAutomatico() {
+    Nodo* reyAnterior = buscarReyActual();
+    
+    if (reyAnterior == NULL) {
+        // Buscar quien fue rey
+        for (size_t i = 0; i < todosLosNodos.size(); i++) {
+            if (todosLosNodos[i]->was_king || todosLosNodos[i]->is_king) {
+                reyAnterior = todosLosNodos[i];
+                break;
+            }
+        }
+    }
+    
+    if (reyAnterior != NULL) {
+        reyAnterior->is_king = false;
+        reyAnterior->was_king = true;
+        
+        cout << "\nBuscando sucesor del rey " << reyAnterior->name << " " << reyAnterior->last_name << "..." << endl;
+        
+        Nodo* nuevoRey = buscarMejorCandidatoVaron(reyAnterior);
+        
+        if (nuevoRey != NULL) {
+            nuevoRey->is_king = true;
+            cout << "\n NUEVO REY ASIGNADO " << endl;
+            cout << "Nombre: " << nuevoRey->name << " " << nuevoRey->last_name << endl;
+            cout << "Edad: " << nuevoRey->age << " anios" << endl;
+            cout << "Genero: " << (nuevoRey->gender == 'H' ? "Hombre" : "Mujer") << endl;
+        } else {
+            cout << "\nNo se encontro un sucesor valido en todo el arbol." << endl;
+        }
+    }
+}
 
+void ArbolReal::procesarMuerteRey() {
+    Nodo* reyActual = buscarReyActual();
+    
+    if (reyActual == NULL) {
+        cout << "No hay un rey actual para procesar su muerte." << endl;
+        return;
+    }
+    
+    cout << "Procesando muerte del rey " << reyActual->name << " " << reyActual->last_name << "..." << endl;
+    
+    reyActual->is_dead = true;
+    reyActual->is_king = false;
+    reyActual->was_king = true;
+    
+    asignarReyAutomatico();
+}
 
+void ArbolReal::modificarNodo(int id) {
+    Nodo* nodo = buscarNodoPorId(id);
+    
+    if (nodo == NULL) {
+        cout << "Nodo con ID " << id << " no encontrado." << endl;
+        return;
+    }
+    
+    cout << "\nModificar Nodo" << endl;
+    cout << "Nodo actual: " << nodo->name << " " << nodo->last_name << endl;
+    cout << "\n1. Nombre: " << nodo->name;
+    cout << "\n2. Apellido: " << nodo->last_name;
+    cout << "\n3. Genero: " << nodo->gender;
+    cout << "\n4. Edad: " << nodo->age;
+    cout << "\n5. Estado (vivo/muerto): " << (nodo->is_dead ? "Muerto" : "Vivo");
+    cout << "\n6. Fue rey: " << (nodo->was_king ? "Si" : "No");
+    cout << "\n7. Es rey: " << (nodo->is_king ? "Si" : "No");
+    cout << "\n0. Cancelar" << endl;
+    
+    int opcion;
+    cout << "\nSelecciona la opcion a modificar: ";
+    cin >> opcion;
+    cin.ignore();
+    
+    switch(opcion) {
+        case 1: {
+            cout << "Nuevo nombre: ";
+            getline(cin, nodo->name);
+            break;
+        }
+        case 2: {
+            cout << "Nuevo apellido: ";
+            getline(cin, nodo->last_name);
+            break;
+        }
+        case 3: {
+            cout << "Nuevo genero (H/M): ";
+            cin >> nodo->gender;
+            break;
+        }
+        case 4: {
+            cout << "Nueva edad: ";
+            cin >> nodo->age;
+            
+            // Verificar si debe dejar de ser rey por edad
+            if (nodo->is_king && nodo->age >= 70) {
+                cout << "\nEl rey ha superado los 70 anios. Se asignara un nuevo rey." << endl;
+                procesarMuerteRey();
+            }
+            break;
+        }
+        case 5: {
+            int estado;
+            cout << "Esta muerto? (1=Si, 0=No): ";
+            cin >> estado;
+            nodo->is_dead = (estado == 1);
+            
+            if (nodo->is_dead && nodo->is_king) {
+                procesarMuerteRey();
+            }
+            break;
+        }
+        case 6: {
+            int valor;
+            cout << "Fue rey? (1=Si, 0=No): ";
+            cin >> valor;
+            nodo->was_king = (valor == 1);
+            break;
+        }
+        case 7: {
+            int valor;
+            cout << "Es rey? (1=Si, 0=No): ";
+            cin >> valor;
+            nodo->is_king = (valor == 1);
+            break;
+        }
+        case 0:
+            cout << "Operacion cancelada." << endl;
+            return;
+        default:
+            cout << "Opcion invalida." << endl;
+            return;
+    }
+    
+    cout << "Nodo modificado exitosamente." << endl;
+}
+
+void ArbolReal::mostrarMenu() {
+    cout << "==SISTEMA DE SUCESION REAL==" << endl;
+    cout << "1. Mostrar arbol genealogico completo" << endl;
+    cout << "2. Mostrar linea de sucesion actual" << endl;
+    cout << "3. Procesar muerte del rey actual" << endl;
+    cout << "4. Modificar datos de un nodo" << endl;
+    cout << "5. Salir" << endl;
+    cout << "\nSeleccione una opcion: ";
+}
+
+void ArbolReal::ejecutar() {
+    int opcion;
+    
+    do {
+        mostrarMenu();
+        cin >> opcion;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        
+        switch(opcion) {
+            case 1:
+                mostrarArbol();
+                break;
+            case 2:
+                mostrarLineaSuccesion();
+                break;
+            case 3:
+                procesarMuerteRey();
+                break;
+            case 4: {
+                int id;
+                cout << "Ingrese el ID del nodo a modificar: ";
+                cin >> id;
+                cin.ignore();
+                modificarNodo(id);
+                break;
+            }
+            case 5:
+                cout << "\nGracias por usar el sistema." << endl;
+                break;
+            default:
+                cout << "Opcion invalida. Intente nuevamente." << endl;
+        }
+        
+        if (opcion != 5) {
+            cout << "\nPresiona enter para seguir.";
+            cin.get();
+        }
+        
+    } while(opcion != 5);
+}
