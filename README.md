@@ -1,5 +1,6 @@
 ------REALIZADO POR------
 ERIC VARGAS Y SANTIAGO CARRASQUERO
+31907574      31653014
 
 PROYECTO DE SUCESION REAL
 Sistema de gestión de un arbol genealógico con asignación automática de sucesores basado en reglas de primogenitura.
