@@ -10,6 +10,9 @@ using namespace std;
 
 ArbolReal::ArbolReal() {
     raiz = NULL;
+    cantidadNodos = 0;
+    capacidadMaxima = 100;  //Capacidad inicial
+    todosLosNodos = new Nodo*[capacidadMaxima];
 }
 
 ArbolReal::~ArbolReal() {
