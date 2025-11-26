@@ -2,20 +2,21 @@
 #define ARBOL_REAL_H
 
 #include "Nodo.h"
-#include <vector>
 #include <string>
 using namespace std;
 
 class ArbolReal {
 private:
     Nodo* raiz;
-    vector<Nodo*> todosLosNodos;
+    Nodo** todosLosNodos;  // Array dinamico de punteros
+    int cantidadNodos;
+    int capacidadMaxima;
     
     //Metodos aux
     Nodo* buscarNodoPorId(int id);
     Nodo* buscarReyActual();
     void construirRelacionesPadreFijo();
-    void obtenerLineaSuccesionRecursiva(Nodo* nodo, vector<Nodo*>& linea, bool esPrimogenito);
+    void obtenerLineaSuccesionRecursiva(Nodo* nodo, Nodo** linea, int& contador, bool esPrimogenito);
     Nodo* buscarPrimerVaronVivo(Nodo* nodo);
     Nodo* buscarAncestroConDosHijos(Nodo* nodo);
     Nodo* buscarMejorCandidatoVaron(Nodo* inicioNodo);
@@ -24,6 +25,7 @@ private:
     void asignarReyAutomatico();
     void mostrarNodo(Nodo* nodo, int nivel, bool esPrimogenito);
     void destruirArbol(Nodo* nodo);
+    void agregarNodo(Nodo* nuevoNodo);
     
 public:
     ArbolReal();
