@@ -33,7 +33,7 @@ El sistema implementa las siguientes reglas:
 
 1. Con el repositorio ya clonado en vs code, lo que debemos hacer es abrir el terminal, y entrar a la carpeta donde estan los archivos para asi poder compilar y ejecutar
 2. ¿Como se hace? pues abrimos el terminal con ctrl ñ y colocamos cd proyecto-sucesion-real y entraria a la carpeta y posteriormente ya podriamos compilar
-3.  g++ -g src/main.cpp src/ArbolReal.cpp -o bin/royal_family -std=c++11
+3. el comando para poder compilar seria el siguiente: g++ -g src/main.cpp src/ArbolReal.cpp -o bin/royal_family -std=c++11
 
 -EJECUCION DEL CODIGO-
 
